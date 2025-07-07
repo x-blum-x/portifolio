@@ -93,6 +93,12 @@ const config: Config = {
   		}
   	}
   },
+	safelist: [
+    {
+      pattern: /(from|to)-(gray|red|green|blue|yellow|orange|purple|pink|indigo|cyan|teal|lime|amber|violet|fuchsia|rose)-(100|200|300|400|500|600|700|800|900)/,
+      variants: ['hover'],
+    },
+  ],
   plugins: [require("tailwindcss-animate")],
 };
 export default config;
