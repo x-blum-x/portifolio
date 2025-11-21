@@ -36,9 +36,6 @@ export default function Navigation() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
-          <motion.div whileHover={{ scale: 1.05 }} className="text-2xl font-bold text-white font-mono">
-            Gabriel Blum
-          </motion.div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-8">

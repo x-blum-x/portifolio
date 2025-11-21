@@ -12,69 +12,138 @@ export default function MatrixBackground() {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // Set canvas size
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-    }
-
-    resizeCanvas()
-    window.addEventListener("resize", resizeCanvas)
-
-    // Matrix characters
-    const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}0123456789"
+    const matrix =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}0123456789"
     const matrixArray = matrix.split("")
 
-    const fontSize = 10
-    const columns = canvas.width / fontSize
+    const fontSize = 14
 
-    // Array of drops - one per column
-    const drops: number[] = []
-    for (let x = 0; x < columns; x++) {
-      drops[x] = 1
+    let drops: number[] = []
+    let visibleColumns = 0
+    let baseColumns = 0 // 100% “base”
+    let maxColumns = 0 // base + 100% extra
+    let animationId: number
+    let resizeTimeoutId: number | undefined
+
+    const createDropsArray = (cols: number, prev?: number[]) => {
+      const maxY = Math.floor(canvas.height / fontSize)
+      const arr = new Array<number>(cols)
+
+      for (let i = 0; i < cols; i++) {
+        if (prev && prev[i] != null) {
+          arr[i] = prev[i]
+        } else {
+          arr[i] = Math.floor(Math.random() * maxY)
+        }
+      }
+
+      return arr
     }
 
-    // Drawing the characters
-    const draw = () => {
-      // Black background with slight transparency for trail effect
-      ctx.fillStyle = "rgba(0, 0, 0, 0.04)"
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+    const updateColumns = () => {
+      const colsForWidth = Math.max(Math.floor(canvas.width / fontSize), 1)
 
-      ctx.fillStyle = "#0F4"
-      ctx.font = fontSize + "px monospace"
+      if (baseColumns === 0) {
+        // inicial: 100% + 100% extra
+        baseColumns = colsForWidth
+        maxColumns = baseColumns * 2
+        drops = createDropsArray(maxColumns)
+      } else if (colsForWidth > baseColumns * 1.9 || colsForWidth > maxColumns) {
+        // chegou em ~190% -> esse passa a ser o novo 100% e ganha +100% extra
+        baseColumns = colsForWidth
+        maxColumns = baseColumns * 2
+        drops = createDropsArray(maxColumns, drops)
+      }
 
-      // Loop over drops
-      for (let i = 0; i < drops.length; i++) {
-        // Random character
-        const text = matrixArray[Math.floor(Math.random() * matrixArray.length)]
+      visibleColumns = colsForWidth
+    }
 
-        // Draw character
-        ctx.fillStyle = "#0F4"
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize)
+    const resizeCanvas = () => {
+      const newWidth = window.innerWidth
+      const newHeight = window.innerHeight
 
-        // Add some red characters randomly
-        if (Math.random() > 0.98) {
-          ctx.fillStyle = "#F04"
-          ctx.fillText(text, i * fontSize, drops[i] * fontSize)
+      let previousImageData: ImageData | null = null
+
+      if (canvas.width > 0 && canvas.height > 0) {
+        try {
+          previousImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        } catch {
+          previousImageData = null
         }
+      }
 
-        // Reset drop to top randomly
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0
-        }
+      canvas.width = newWidth
+      canvas.height = newHeight
 
-        // Increment Y coordinate
-        drops[i]++
+      updateColumns()
+
+      if (previousImageData) {
+        // desenha o frame antigo no novo canvas (recorta se precisar)
+        ctx.putImageData(previousImageData, 0, 0)
       }
     }
 
-    const interval = setInterval(draw, 35)
+    const handleResize = () => {
+      if (resizeTimeoutId !== undefined) {
+        window.clearTimeout(resizeTimeoutId)
+      }
+      // debounce: só aplica o resize depois de parar de mexer
+      resizeTimeoutId = window.setTimeout(() => {
+        resizeCanvas()
+      }, 120)
+    }
+
+    const draw = () => {
+      // fundo com rastro
+      ctx.fillStyle = "rgba(0, 0, 0, 0.04)"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      ctx.font = `${fontSize}px monospace`
+
+      for (let i = 0; i < visibleColumns; i++) {
+        const char =
+          matrixArray[Math.floor(Math.random() * matrixArray.length)]
+
+        const x = i * fontSize
+        const y = drops[i] * fontSize
+
+        ctx.fillStyle = "#0F4"
+        ctx.fillText(char, x, y)
+
+        if (Math.random() > 0.98) {
+          ctx.fillStyle = "#F04"
+          ctx.fillText(char, x, y)
+        }
+
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0
+        }
+
+        drops[i]++
+      }
+
+      animationId = window.requestAnimationFrame(draw)
+    }
+
+    // inicializa
+    resizeCanvas()
+    window.addEventListener("resize", handleResize)
+    animationId = window.requestAnimationFrame(draw)
 
     return () => {
-      clearInterval(interval)
-      window.removeEventListener("resize", resizeCanvas)
+      window.cancelAnimationFrame(animationId)
+      window.removeEventListener("resize", handleResize)
+      if (resizeTimeoutId !== undefined) {
+        window.clearTimeout(resizeTimeoutId)
+      }
     }
   }, [])
 
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none opacity-20" style={{ zIndex: 1 }} />
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 pointer-events-none opacity-20"
+      style={{ zIndex: 1 }}
+    />
+  )
 }

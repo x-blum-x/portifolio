@@ -1,40 +1,49 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef } from "react"
 import { motion } from "framer-motion"
 
 interface ThreeDNameProps {
   children: string
+  /** Posição do mouse relativa ao centro da área que você quiser (ex: sessão inteira) */
+  mousePosition?: {
+    x: number
+    y: number
+  }
 }
 
-export default function ThreeDName({ children }: ThreeDNameProps) {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+export default function ThreeDName({ children, mousePosition }: ThreeDNameProps) {
+  const [internalMousePosition, setInternalMousePosition] = useState({ x: 0, y: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
 
+  const useExternalMouse = mousePosition !== undefined
+  const effectiveMousePosition = useExternalMouse ? mousePosition! : internalMousePosition
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return
+    if (!containerRef.current || useExternalMouse) return
 
     const rect = containerRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left - rect.width / 2
     const y = e.clientY - rect.top - rect.height / 2
 
-    setMousePosition({ x, y })
+    setInternalMousePosition({ x, y })
   }
 
   const handleMouseLeave = () => {
-    setMousePosition({ x: 0, y: 0 })
+    if (useExternalMouse) return
+    setInternalMousePosition({ x: 0, y: 0 })
   }
 
-  const redShadow = `${mousePosition.y / 10}px ${mousePosition.x / 80}px 1px rgba(239, 68, 68, 0.8)`
-  const blueShadow = `${mousePosition.y / 8}px ${mousePosition.x / 60}px 1px rgba(59, 130, 246, 1)`
+  // Agora as sombras vão na direção oposta ao mouse de forma natural
+  const redShadow = `${-effectiveMousePosition.x / 50}px ${-effectiveMousePosition.y / 50}px 2px rgba(239, 68, 68, 0.9)`
+  const blueShadow = `${-effectiveMousePosition.x / 30}px ${-effectiveMousePosition.y / 30}px 3px rgba(59, 130, 246, 0.9)`
 
   return (
     <div
       ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseMove={useExternalMouse ? undefined : handleMouseMove}
+      onMouseLeave={useExternalMouse ? undefined : handleMouseLeave}
       className="relative cursor-pointer select-none"
     >
       {/* Red shadow */}

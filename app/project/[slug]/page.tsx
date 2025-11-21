@@ -28,7 +28,7 @@ export default function ProjectPage() {
     if (project.github) {
       const [owner, repo] = project.github.replace("https://github.com/", "").split("/")
       getCommitCount(owner, repo).then((count) => {
-        console.log(`Result: ${owner}, ${repo}, Commits: ${count}`)
+        //console.log(`Result: ${owner}, ${repo}, Commits: ${count}`)
         setCommitCount(count)
       })
     }

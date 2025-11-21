@@ -28,11 +28,11 @@ export default function Home() {
       <MatrixBackground />
 
       {/* Subtle gradient overlay */}
-      <motion.div className="fixed inset-0 opacity-40" style={{ y: backgroundY, zIndex: 2 }}>
+      {/* <motion.div className="fixed inset-0 opacity-40" style={{ y: backgroundY, zIndex: 2 }}>
         <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(220,38,38,0.1),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(75,85,99,0.1),transparent_50%)]" />
-      </motion.div>
+      </motion.div> */}
 
       <Navigation />
 

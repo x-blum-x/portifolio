@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { Github, Linkedin, Instagram, ChevronDown } from "lucide-react"
 import ThreeDName from "@/components/ThreeDName"
@@ -13,8 +15,33 @@ export default function HeroSection() {
     { icon: Github, href: "https://github.com/x-blum-x", label: "GitHub" },
   ]
 
+  const sectionRef = useRef<HTMLElement | null>(null)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (!sectionRef.current) return
+
+    const rect = sectionRef.current.getBoundingClientRect()
+
+    // posição relativa ao centro da sessão inteira
+    const x = e.clientX - (rect.left + rect.width / 2)
+    const y = e.clientY - (rect.top + rect.height / 2)
+
+    setMousePosition({ x, y })
+  }
+
+  const handleMouseLeave = () => {
+    setMousePosition({ x: 0, y: 0 })
+  }
+
   return (
-    <section id="home" className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20">
+    <section
+      id="home"
+      ref={sectionRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20"
+    >
       <div className="max-w-7xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Text Content */}
@@ -24,16 +51,16 @@ export default function HeroSection() {
             transition={{ duration: 0.8 }}
             className="space-y-8"
           >
-            <motion.p
+            {/* <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.7 }}
               transition={{ delay: 0.2 }}
               className="text-xl text-gray-400 font-light font-mono"
             >
               Hi, my name is
-            </motion.p>
+            </motion.p> */}
 
-            <ThreeDName>Gabriel Blum</ThreeDName>
+            <ThreeDName mousePosition={mousePosition}>Gabriel Blum</ThreeDName>
 
             <motion.p
               initial={{ opacity: 0 }}
@@ -55,7 +82,8 @@ export default function HeroSection() {
               className="text-lg text-gray-300 leading-relaxed max-w-2xl"
             >
               Desenvolvedor Full Stack apaixonado por criar soluções inovadoras e experiências digitais excepcionais.
-              Formado pela UNEMAT em 2024, especializado em tecnologias modernas como React, React Native, TypeScript, Python, NextJS, C++.
+              Formado pela UNEMAT em 2024, especializado em tecnologias modernas como React, React Native, TypeScript,
+              Python, NextJS, C++.
             </motion.p>
 
             {/* Social Links */}
@@ -65,7 +93,7 @@ export default function HeroSection() {
               transition={{ delay: 1 }}
               className="flex space-x-6"
             >
-              {socialLinks.map((social, index) => (
+              {socialLinks.map((social) => (
                 <motion.a
                   key={social.label}
                   href={social.href}
