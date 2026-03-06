@@ -1,13 +1,14 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { useInView } from "framer-motion"
+import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import { ExternalLink, Github, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { projectsData } from "@/data/projectData"
+import { useLanguage } from "@/context/LanguageContext"
 
 export default function ProjectsSection() {
+  const { t } = useLanguage()
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
 
@@ -26,10 +27,8 @@ export default function ProjectsSection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 font-mono">Projetos em Destaque</h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Alguns dos projetos que desenvolvi para demonstrar minhas habilidades
-          </p>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 font-mono">{t.projects.title}</h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto">{t.projects.subtitle}</p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -100,7 +99,7 @@ export default function ProjectsSection() {
                   href={`/project/${project.slug}`}
                   className="flex items-center space-x-1 text-red-400 hover:text-red-300 transition-colors duration-200 font-medium"
                 >
-                  <span className="text-sm">Ver mais</span>
+                  <span className="text-sm">{t.projects.viewMore}</span>
                   <ArrowRight size={16} />
                 </Link>
               </div>

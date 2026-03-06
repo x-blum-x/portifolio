@@ -48,7 +48,7 @@ export default function ThreeDName({ children, mousePosition }: ThreeDNameProps)
     >
       {/* Red shadow */}
       <div
-        className="absolute inset-0 text-6xl md:text-7xl lg:text-8xl font-black text-transparent pointer-events-none"
+        className="absolute inset-0 text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-transparent pointer-events-none"
         style={{ textShadow: redShadow }}
       >
         {children}
@@ -56,7 +56,7 @@ export default function ThreeDName({ children, mousePosition }: ThreeDNameProps)
 
       {/* Blue shadow */}
       <div
-        className="absolute inset-0 text-6xl md:text-7xl lg:text-8xl font-black text-transparent pointer-events-none"
+        className="absolute inset-0 text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-transparent pointer-events-none"
         style={{ textShadow: blueShadow }}
       >
         {children}
@@ -64,7 +64,7 @@ export default function ThreeDName({ children, mousePosition }: ThreeDNameProps)
 
       {/* Main text */}
       <motion.h1
-        className="relative text-6xl md:text-7xl lg:text-8xl font-black text-white z-10"
+        className="relative text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white z-10"
         whileHover={{ scale: 1.02 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
@@ -72,7 +72,7 @@ export default function ThreeDName({ children, mousePosition }: ThreeDNameProps)
       </motion.h1>
 
       {/* Reflection */}
-      <div className="absolute top-full mt-4 text-6xl md:text-7xl lg:text-8xl font-black text-blue-400/20 transform scale-y-[-1] pointer-events-none blur-sm">
+      <div className="absolute top-full mt-4 text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-blue-400/20 transform scale-y-[-1] pointer-events-none blur-sm">
         {children}
       </div>
     </div>

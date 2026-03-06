@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence, type PanInfo } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { FaReact, FaNodeJs } from "react-icons/fa"
 import { SiTypescript, SiRust, SiNextdotjs } from "react-icons/si"
 
@@ -9,12 +9,12 @@ const technologies = [
   {
     name: "React",
     color: "from-blue-500 to-cyan-700",
-    icon: <FaReact size={36} className="text-cyan-300 drop-shadow" />
+    icon: <FaReact size={28} className="text-cyan-300 drop-shadow" />,
   },
   {
     name: "TypeScript",
     color: "from-blue-700 to-blue-900",
-    icon: <SiTypescript size={36} className="text-blue-300 drop-shadow" />
+    icon: <SiTypescript size={28} className="text-blue-300 drop-shadow" />,
   },
   {
     name: "Python",
@@ -23,176 +23,148 @@ const technologies = [
       <img
         src="/assets/python.svg"
         alt="Python"
-        className="w-9 h-9 drop-shadow"
+        className="w-7 h-7 drop-shadow"
         draggable={false}
       />
-    )
+    ),
   },
   {
     name: "Rust",
     color: "from-orange-800 to-gray-900",
-    icon: <SiRust size={36} className="text-orange-300 drop-shadow" />
+    icon: <SiRust size={28} className="text-orange-300 drop-shadow" />,
   },
   {
     name: "Next.js",
     color: "from-gray-900 to-black",
-    icon: <SiNextdotjs size={36} className="text-white drop-shadow" />
+    icon: <SiNextdotjs size={28} className="text-white drop-shadow" />,
   },
   {
     name: "Node.js",
     color: "from-green-700 to-green-900",
-    icon: <FaNodeJs size={36} className="text-green-300 drop-shadow" />
-  }
+    icon: <FaNodeJs size={28} className="text-green-300 drop-shadow" />,
+  },
 ]
-const ITEM_WIDTH = 60
-const VISIBLE_COUNT = 5
-const CENTER_SLOT = Math.floor(VISIBLE_COUNT / 2) // 2
+
+const N = technologies.length
+
+function getOffset(index: number, active: number): number {
+  let offset = (index - active + N) % N
+  if (offset > N / 2) offset -= N
+  return offset
+}
 
 export default function TechSlider() {
   const [activeIndex, setActiveIndex] = useState(0)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-  const autoPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [layout, setLayout] = useState({ step: 72, size: 56 })
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const restartAutoPlay = () => {
-    setIsAutoPlaying(false)
-    if (autoPlayTimeoutRef.current) {
-      clearTimeout(autoPlayTimeoutRef.current)
+  useEffect(() => {
+    const update = () => {
+      const mobile = window.innerWidth < 640
+      setLayout(mobile ? { step: 72, size: 56 } : { step: 120, size: 80 })
     }
-    autoPlayTimeoutRef.current = setTimeout(() => {
-      setIsAutoPlaying(true)
-    }, 5000)
-  }
+    update()
+    window.addEventListener("resize", update)
+    return () => window.removeEventListener("resize", update)
+  }, [])
 
-  // move o índice central (carrossel circular)
-  const move = (dir: 1 | -1) => {
-    setActiveIndex((prev) => (prev + (dir === 1 ? 1 : -1) + technologies.length) % technologies.length)
-  }
-
-  useEffect(() => {
-    if (!isAutoPlaying) return
-
-    const interval = setInterval(() => {
-      move(1) // próximo
+  const startAutoPlay = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    intervalRef.current = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % N)
     }, 3000)
+  }
 
-    return () => clearInterval(interval)
-  }, [isAutoPlaying])
+  const pauseAndResume = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
+    pauseTimerRef.current = setTimeout(startAutoPlay, 5000)
+  }
 
   useEffect(() => {
+    startAutoPlay()
     return () => {
-      if (autoPlayTimeoutRef.current) {
-        clearTimeout(autoPlayTimeoutRef.current)
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
     }
   }, [])
 
-  const handleIconClick = (slot: number) => {
-    const distanceFromCenter = slot - CENTER_SLOT
-    if (distanceFromCenter !== 0) {
-      setActiveIndex((prev) => (prev + distanceFromCenter + technologies.length) % technologies.length)
-      restartAutoPlay()
-    }
+  const handleClick = (index: number) => {
+    if (index === activeIndex) return
+    setActiveIndex(index)
+    pauseAndResume()
   }
 
-  // monta a fila visível: centro ±2 (sempre 5 itens)
-  const visibleIndices: number[] = []
-  for (let offset = -CENTER_SLOT; offset <= CENTER_SLOT; offset++) {
-    const index = (activeIndex + offset + technologies.length) % technologies.length
-    visibleIndices.push(index)
-  }
+  const { step, size } = layout
+  const half = size / 2
 
   return (
-    <div className="flex items-center justify-center py-8 select-none">
-      <div className="relative w-full max-w-[600px] h-28 overflow-visible" style={{ perspective: "1000px" }}>
-        <div className="flex h-full items-center justify-center gap-10">
-          <AnimatePresence mode="popLayout">
-            {visibleIndices.map((techIndex, slot) => {
-              const tech = technologies[techIndex]
-              const distanceFromCenter = Math.abs(slot - CENTER_SLOT)
-              const isCenter = slot === CENTER_SLOT
-              const offsetX = (slot - CENTER_SLOT) * ITEM_WIDTH
+    <div className="flex flex-col items-center gap-3 py-6 select-none w-full">
+      {/* Container do carrossel — overflow-hidden apenas aqui */}
+      <div
+        className="relative w-full max-w-[600px] h-24 sm:h-28 overflow-hidden"
+        style={{ perspective: "1000px" }}
+      >
+        {technologies.map((tech, index) => {
+          const offset = getOffset(index, activeIndex)
+          const absOffset = Math.abs(offset)
+          const isCenter = offset === 0
+          const isVisible = absOffset <= 2
 
-              const scale = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.88 : 0.75
+          const scale = absOffset === 0 ? 1 : absOffset === 1 ? 0.88 : 0.75
+          const opacity = isVisible
+            ? absOffset === 0 ? 1 : absOffset === 1 ? 0.75 : 0.5
+            : 0
+          const blur = absOffset === 0 ? 0 : absOffset === 1 ? 1 : 2
+          const rotateY = offset * -15
+          const x = offset * step - half
+          const y = -half + (isCenter ? 0 : 4)
 
-              const opacity = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.75 : 0.5
+          return (
+            <motion.div
+              key={tech.name}
+              className={`absolute top-1/2 left-1/2 w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br ${tech.color} flex items-center justify-center shadow-lg border border-gray-600/30 cursor-pointer`}
+              animate={{ x, y, scale, opacity, rotateY, filter: `blur(${blur}px)` }}
+              transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 28,
+                mass: 0.8,
+                opacity: { duration: 0.35, ease: "easeInOut" },
+                filter: { duration: 0.3, ease: "easeInOut" },
+              }}
+              style={{ zIndex: 10 - absOffset, transformStyle: "preserve-3d" }}
+              onClick={() => handleClick(index)}
+              whileHover={
+                isVisible
+                  ? { scale: scale * 1.1, transition: { duration: 0.18 } }
+                  : {}
+              }
+            >
+              <span className="flex items-center justify-center">{tech.icon}</span>
+            </motion.div>
+          )
+        })}
+      </div>
 
-              const zIndex = 10 - distanceFromCenter
-
-              const rotateY = (slot - CENTER_SLOT) * -15
-
-              const blur = distanceFromCenter === 0 ? 0 : distanceFromCenter === 1 ? 1 : 2
-
-              return (
-                <motion.div
-                  key={`${tech.name}-${techIndex}`}
-                  layoutId={tech.name}
-                  className={`relative w-20 h-20 rounded-2xl bg-gradient-to-br ${tech.color} flex items-center justify-center shadow-lg border border-gray-600/30 ${!isCenter ? "" : ""}`}
-                  style={{
-                    zIndex,
-                    transformStyle: "preserve-3d",
-                  }}
-                  onClick={() => handleIconClick(slot)}
-                  initial={{
-                    scale: 0.7,
-                    opacity: 0,
-                    rotateY: slot > CENTER_SLOT ? 45 : -45,
-                    filter: `blur(3px)`,
-                  }}
-                  animate={{
-                    scale,
-                    opacity,
-                    rotateY,
-                    filter: `blur(${blur}px)`,
-                    y: isCenter ? 0 : 4,
-                  }}
-                  exit={{
-                    scale: 0.7,
-                    opacity: 0,
-                    rotateY: slot > CENTER_SLOT ? -45 : 45,
-                    filter: `blur(3px)`,
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                    opacity: { duration: 0.3 },
-                    scale: { duration: 0.4 },
-                    rotateY: { duration: 0.5, ease: "easeInOut" },
-                  }}
-                  whileHover={
-                    !isCenter
-                      ? {
-                          scale: scale * 1.1,
-                          transition: { duration: 0.2 },
-                        }
-                      : {
-                          scale: 1.1,
-                          rotateY: 0,
-                          transition: { duration: 0.2 },
-                        }
-                  }
-                >
-                  <span className="text-3xl flex items-center justify-center">{tech.icon}</span>
-
-                  {isCenter && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 12, scale: 0.8 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -8, scale: 0.8 }}
-                      transition={{
-                        duration: 0.3,
-                        ease: "easeOut",
-                      }}
-                      className="absolute -bottom-7 -translate-x-1/2 text-gray-300 text-sm font-medium whitespace-nowrap text-center"
-                    >
-                      {tech.name}
-                    </motion.div>
-                  )}
-                </motion.div>
-              )
-            })}
-          </AnimatePresence>
-        </div>
+      {/* Label fora do overflow-hidden — nunca cortada */}
+      <div className="h-5 flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={activeIndex}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="text-gray-300 text-sm font-medium whitespace-nowrap"
+          >
+            {technologies[activeIndex].name}
+          </motion.span>
+        </AnimatePresence>
       </div>
     </div>
   )

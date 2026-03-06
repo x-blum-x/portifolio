@@ -1,33 +1,27 @@
-import type React from "react"
+"use client"
 
-import { motion } from "framer-motion"
-import { useInView } from "framer-motion"
+import type React from "react"
+import { motion, useInView } from "framer-motion"
 import { useRef, useState } from "react"
-import { Mail, Phone, MapPin, Send } from "lucide-react"
+import { Mail, MapPin, Send } from "lucide-react"
+import { useLanguage } from "@/context/LanguageContext"
 
 export default function ContactSection() {
+  const { t } = useLanguage()
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  })
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" })
   const [showDevMessage, setShowDevMessage] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
     console.log("Form submitted:", formData)
     setShowDevMessage(true)
-    setTimeout(() => setShowDevMessage(false), 6000) // some delay to hide after 6s
+    setTimeout(() => setShowDevMessage(false), 6000)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+    setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
   const contactInfo = [
@@ -39,7 +33,7 @@ export default function ContactSection() {
     },
     {
       icon: MapPin,
-      title: "Localização",
+      title: t.contact.location,
       value: "Cuiabá - MT, Brasil",
       href: "#",
     },
@@ -55,10 +49,8 @@ export default function ContactSection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Entre em Contato</h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Vamos conversar sobre seu próximo projeto ou oportunidade de trabalho
-          </p>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">{t.contact.title}</h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto">{t.contact.subtitle}</p>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12">
@@ -70,7 +62,7 @@ export default function ContactSection() {
             className="space-y-8"
           >
             <div>
-              <h3 className="text-2xl font-bold text-white mb-6">Informações de Contato</h3>
+              <h3 className="text-2xl font-bold text-white mb-6">{t.contact.infoTitle}</h3>
               <div className="space-y-6">
                 {contactInfo.map((info, index) => (
                   <motion.a
@@ -104,7 +96,7 @@ export default function ContactSection() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-white font-medium mb-2">
-                  Nome
+                  {t.contact.nameLabel}
                 </label>
                 <input
                   type="text"
@@ -114,13 +106,13 @@ export default function ContactSection() {
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-200"
-                  placeholder="Seu nome"
+                  placeholder={t.contact.namePlaceholder}
                 />
               </div>
 
               <div>
                 <label htmlFor="email" className="block text-white font-medium mb-2">
-                  Email
+                  {t.contact.emailLabel}
                 </label>
                 <input
                   type="email"
@@ -136,7 +128,7 @@ export default function ContactSection() {
 
               <div>
                 <label htmlFor="message" className="block text-white font-medium mb-2">
-                  Mensagem
+                  {t.contact.messageLabel}
                 </label>
                 <textarea
                   id="message"
@@ -146,7 +138,7 @@ export default function ContactSection() {
                   required
                   rows={5}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-200 resize-none"
-                  placeholder="Sua mensagem..."
+                  placeholder={t.contact.messagePlaceholder}
                 />
               </div>
 
@@ -157,10 +149,9 @@ export default function ContactSection() {
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium py-3 px-6 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <Send size={18} />
-                <span>Enviar Mensagem</span>
+                <span>{t.contact.send}</span>
               </motion.button>
 
-              {/* Notificação de funcionalidade em desenvolvimento */}
               {showDevMessage && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -168,7 +159,7 @@ export default function ContactSection() {
                   exit={{ opacity: 0 }}
                   className="text-center mt-3 text-yellow-300 bg-yellow-900/20 px-4 py-2 rounded-lg"
                 >
-                  Funcionalidade de envio de e-mail em desenvolvimento. 🚧
+                  {t.contact.devMessage}
                 </motion.div>
               )}
             </form>

@@ -7,8 +7,11 @@ import { Github, Linkedin, Instagram, ChevronDown } from "lucide-react"
 import ThreeDName from "@/components/ThreeDName"
 import TechSlider from "@/components/TechSlider"
 import Image from "next/image"
+import { useLanguage } from "@/context/LanguageContext"
 
 export default function HeroSection() {
+  const { t } = useLanguage()
+
   const socialLinks = [
     { icon: Instagram, href: "https://www.instagram.com/x_blum_x/", label: "Instagram" },
     { icon: Linkedin, href: "https://www.linkedin.com/in/gabriel-blum-santos-9b981625a/", label: "LinkedIn" },
@@ -20,13 +23,9 @@ export default function HeroSection() {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (!sectionRef.current) return
-
     const rect = sectionRef.current.getBoundingClientRect()
-
-    // posição relativa ao centro da sessão inteira
     const x = e.clientX - (rect.left + rect.width / 2)
     const y = e.clientY - (rect.top + rect.height / 2)
-
     setMousePosition({ x, y })
   }
 
@@ -51,24 +50,15 @@ export default function HeroSection() {
             transition={{ duration: 0.8 }}
             className="space-y-8"
           >
-            {/* <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.7 }}
-              transition={{ delay: 0.2 }}
-              className="text-xl text-gray-400 font-light font-mono"
-            >
-              Hi, my name is
-            </motion.p> */}
-
             <ThreeDName mousePosition={mousePosition}>Gabriel Blum</ThreeDName>
 
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.8 }}
               transition={{ delay: 0.4 }}
-              className="text-xl text-gray-400 font-light font-mono"
+              className="text-base sm:text-xl text-gray-400 font-light font-mono"
             >
-              I can build everything you want, just ask me!
+              {t.hero.tagline}
             </motion.p>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
@@ -79,11 +69,9 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="text-lg text-gray-300 leading-relaxed max-w-2xl"
+              className="text-sm sm:text-lg text-gray-300 leading-relaxed max-w-2xl"
             >
-              Desenvolvedor Full Stack apaixonado por criar soluções inovadoras e experiências digitais excepcionais.
-              Formado pela UNEMAT em 2024, especializado em tecnologias modernas como React, React Native, TypeScript,
-              Python, NextJS, C++.
+              {t.hero.description}
             </motion.p>
 
             {/* Social Links */}
@@ -128,7 +116,7 @@ export default function HeroSection() {
                   repeat: Number.POSITIVE_INFINITY,
                   ease: "easeInOut",
                 }}
-                className="w-80 h-80 rounded-tl-[120px] rounded-br-[120px] overflow-hidden border-4 border-gray-600/30 shadow-2xl backdrop-blur-sm bg-gray-800/10"
+                className="w-56 h-56 sm:w-80 sm:h-80 rounded-tl-[80px] rounded-br-[80px] sm:rounded-tl-[120px] sm:rounded-br-[120px] overflow-hidden border-4 border-gray-600/30 shadow-2xl backdrop-blur-sm bg-gray-800/10"
               >
                 <Image
                   src="/assets/face.jpg"
